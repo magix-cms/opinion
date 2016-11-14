@@ -1,0 +1,1 @@
+{headlink rel="stylesheet" href="/{baseadmin}/min/?f=plugins/{if $smarty.get.name}{$smarty.get.name}{else}{$smarty.get.plugin}{/if}/css/admin.css" concat={$concat} media="screen"}

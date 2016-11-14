@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<config>
+	<acl>
+		<admin>
+			<authorized>
+				<allow_access>1</allow_access>
+			</authorized>
+			<infos>
+				<authors>
+					<author>
+						<name>Salvatore Di Salvo</name>
+						<link>
+                            <website href="http://www.disalvo-infographiste.be" />
+						</link>
+					</author>
+				</authors>
+				<version>
+					<date_create>09/11/2016</date_create>
+					<date_update>09/11/2016</date_update>
+					<number>2.0.0</number>
+					<phase>Stable</phase>
+					<support>
+                        <ticket href="https://github.com/magix-cms/magixcms/issues"></ticket>
+                        <git href="https://github.com/magix-cms/magixcms"></git>
+					</support>
+				</version>
+			</infos>
+		</admin>
+	</acl>
+</config>

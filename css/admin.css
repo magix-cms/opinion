@@ -1,0 +1,7 @@
+#pending_list .td-lg {
+    padding: 12px 10px;
+}
+.text-yellow {
+    color: #ffd700;
+    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.3);
+}

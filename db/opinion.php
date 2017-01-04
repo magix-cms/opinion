@@ -152,17 +152,16 @@ class database_plugins_opinion
 						$sql = "SELECT ROUND(AVG(opi.rating_opinion),1) as globalRating
 							FROM mc_catalog_opinion AS opi
 							JOIN mc_catalog AS c ON ( c.idcatalog = opi.idcatalog )
-							LEFT JOIN mc_lang AS lg ON ( lg.idlang = c.idlang )
-							WHERE lg.iso = :lang 
+							WHERE c.idlang = :lang
+						  	AND opi.idcatalog = :id
 							AND opi.status_opinion = 1";
 					}
 					elseif ($config['type'] === 'pages') {
 						$sql = "SELECT CEIL(count(opi.idopinion)/10) as last_page
 								FROM mc_catalog_opinion AS opi
-								JOIN mc_catalog AS c 
-								ON ( c.idcatalog = opi.idcatalog )
-								LEFT JOIN mc_lang AS lg ON ( lg.idlang = c.idlang )
-								WHERE lg.iso = :lang 
+								JOIN mc_catalog AS c ON ( c.idcatalog = opi.idcatalog )
+								WHERE c.idlang = :lang
+							  	AND opi.idcatalog = :id
 								AND opi.status_opinion = 1";
 					}
 				}

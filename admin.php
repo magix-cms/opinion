@@ -242,7 +242,7 @@ class plugins_opinion_admin extends database_plugins_opinion {
 							}
 						} else {
 							$this->header->set_json_headers();
-							$this->json_get_item_data();
+							print json_encode($this->getItems('opinion',$this->edit,'last'));
 						}
 						break;
 					case 'validate':

@@ -27,7 +27,7 @@
         <div class="opinion-list">
         {if !empty($opinions)}
         {foreach $opinions as $op}
-            {include file="opinion/loop/op.tpl"}
+            {include file="opinion/loop/op.tpl" root=true}
         {/foreach}
         {else}
             <p class="lead">Il n'y a aucun témoignage pour l'instant.</p>

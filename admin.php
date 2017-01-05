@@ -215,7 +215,7 @@ class plugins_opinion_admin extends database_plugins_opinion {
 		if (isset($this->plugin)) {
 			if (self::install_table() == true) {
 				$this->getItems('validated',$this->edit,'all');
-				$this->getItems('globalRating',$this->edit);
+				$this->getItems('avgRating',$this->edit);
 				$this->template->display('catalog.tpl');
 			}
 			else {

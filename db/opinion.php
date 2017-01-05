@@ -94,6 +94,7 @@ class database_plugins_opinion
 							LEFT JOIN mc_lang AS lg ON ( cat.idlang = lg.idlang)
 							WHERE cat.idlang = :lang 
 							AND opi.status_opinion = 0
+							GROUP BY opi.idopinion
 							ORDER BY opi.date_opinion DESC";
 				}
 				elseif ($config['type'] === 'opinions') {
@@ -117,6 +118,7 @@ class database_plugins_opinion
 							LEFT JOIN mc_lang AS lg ON ( cat.idlang = lg.idlang)
 							WHERE lg.iso = :lang 
 							AND opi.status_opinion = 1
+							GROUP BY opi.idopinion
 							ORDER BY opi.date_opinion DESC LIMIT $limit";
 				}
 				elseif ($config['type'] === 'validated') {
@@ -129,6 +131,7 @@ class database_plugins_opinion
 							WHERE catalog.idlang = :lang 
 							AND opi.status_opinion = 1
 							AND opi.idcatalog = :id
+							GROUP BY opi.idopinion
 							ORDER BY opi.date_opinion DESC";
 				}
 				elseif ($config['type'] === 'product_opinions') {
@@ -141,6 +144,7 @@ class database_plugins_opinion
 							WHERE lg.iso = :lang 
 							AND opi.status_opinion = 1
 							AND opi.idcatalog = :id
+							GROUP BY opi.idopinion
 							ORDER BY opi.date_opinion DESC";
 				}
 
@@ -152,16 +156,23 @@ class database_plugins_opinion
 						$sql = "SELECT ROUND(AVG(opi.rating_opinion),1) as globalRating
 							FROM mc_catalog_opinion AS opi
 							JOIN mc_catalog AS c ON ( c.idcatalog = opi.idcatalog )
-							WHERE c.idlang = :lang
-						  	AND opi.idcatalog = :id
+							LEFT JOIN mc_lang AS lg ON ( c.idlang = lg.idlang )
+							WHERE lg.iso = :lang
 							AND opi.status_opinion = 1";
+					}
+					elseif ($config['type'] === 'avgRating') {
+						$sql = "SELECT ROUND(AVG(opi.rating_opinion),1) as avgRating
+							FROM mc_catalog_opinion AS opi
+							JOIN mc_catalog AS catalog ON ( catalog.idcatalog = opi.idcatalog )
+							WHERE catalog.idlang = :lang 
+							AND opi.status_opinion = 1
+							AND opi.idcatalog = :id";
 					}
 					elseif ($config['type'] === 'pages') {
 						$sql = "SELECT CEIL(count(opi.idopinion)/10) as last_page
 								FROM mc_catalog_opinion AS opi
 								JOIN mc_catalog AS c ON ( c.idcatalog = opi.idcatalog )
 								WHERE c.idlang = :lang
-							  	AND opi.idcatalog = :id
 								AND opi.status_opinion = 1";
 					}
 				}
@@ -177,16 +188,8 @@ class database_plugins_opinion
 							WHERE catalog.idlang = :lang 
 							AND opi.status_opinion = 0
 							AND opi.idopinion = :id
+							GROUP BY opi.idopinion
 							ORDER BY opi.date_opinion DESC";
-					}
-					elseif ($config['type'] === 'globalRating') {
-						$sql = "SELECT ROUND(AVG(opi.rating_opinion),1) as globalRating
-							FROM mc_catalog_opinion AS opi
-							JOIN mc_catalog AS catalog 
-							ON ( catalog.idcatalog = opi.idcatalog )
-							WHERE catalog.idlang = :lang 
-							AND opi.status_opinion = 1
-							AND opi.idcatalog = :id";
 					}
 				}
 
@@ -225,6 +228,7 @@ class database_plugins_opinion
 				LEFT JOIN mc_catalog_s AS s ON ( s.idcls = p.idcls )
 				JOIN mc_lang AS lang ON ( cat.idlang = lang.idlang )
 				WHERE opi.status_opinion = 1
+				GROUP BY opi.idopinion
 				ORDER BY opi.date_opinion DESC LIMIT 3";
 		return magixglobal_model_db::layerDB()->select($sql);
 	}

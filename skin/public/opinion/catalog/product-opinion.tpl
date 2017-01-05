@@ -1,5 +1,5 @@
 <div id="opinions">
-    {widget_opinion_data type="catalog" idproduct=$product.id}
+    {widget_opinion_data type="catalog" idproduct=$product.idcatalog}
     <h2 class="h3" id="opinion-section">{#opinions#|ucfirst}</h2>
     <div class="clearfix mc-message-opinion"></div>
     {if !empty($opinions)}

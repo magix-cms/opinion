@@ -1,3 +1,4 @@
+{if !isset($root)}{$root = false}{/if}
 <blockquote class="opinion">
     <span class="quote"></span>
     <div class="opinion-rating pull-right">
@@ -12,6 +13,6 @@
     <footer>{#by#}
         <span>{#opinion_by#|ucfirst} {$op.pseudo_opinion}</span>, le
         <time datetime="{$op.posted}">{$op.date_opinion|date_format:"%d %B %Y"}</time>
-        sur <a title="{#show#|ucfirst} " href="{$op.url}">{$op.titlecatalog}</a>
+        {if $root}sur <a title="{#show#|ucfirst} " href="{$op.url}">{$op.name}</a>{/if}
     </footer>
 </blockquote>

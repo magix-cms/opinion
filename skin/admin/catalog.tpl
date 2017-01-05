@@ -6,10 +6,10 @@
     <header>
         <p class="lead pull-right">
             {#global_rating#|ucfirst}&nbsp;:
-            {for $i=1 to {$globalRating.globalRating|round}}
+            {for $i=1 to {$avgRating.avgRating|round}}
                 <span class="fa fa-star text-yellow"></span>
             {/for}
-            {for $i=1 to (5 - {$globalRating.globalRating|round})}
+            {for $i=1 to (5 - {$avgRating.avgRating|round})}
                 <span class="fa fa-star text-muted"></span>
             {/for}
         </p>

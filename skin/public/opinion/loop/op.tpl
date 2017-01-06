@@ -13,6 +13,6 @@
     <footer>{#by#}
         <span>{#opinion_by#|ucfirst} {$op.pseudo_opinion}</span>, le
         <time datetime="{$op.posted}">{$op.date_opinion|date_format:"%d %B %Y"}</time>
-        {if $root}sur <a title="{#show#|ucfirst} " href="{$op.url}">{$op.name}</a>{/if}
+        {if $root}sur <a title="{#show#|ucfirst} {$op.name}" href="{$op.url}">{$op.name}</a>{/if}
     </footer>
 </blockquote>

@@ -9,8 +9,8 @@
         {widget_catalog_data
             conf =[
                 'context'   => 'product',
-                'sort'      => 'opinion',
-                'limit'     => 1,
+                'sort' => ['date' => 'DESC'],
+                'limit'     => 3,
                 'plugins' => [
                     'override'  => 'plugins_opinion_public',
                     'item' => [
@@ -21,7 +21,7 @@
                         'date_opinion'      =>  'date_opinion'
                         ]
                     ]
-            ]
+                ]
             assign='opinions'
         }
         <div class="opinion-list">

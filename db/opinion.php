@@ -200,15 +200,42 @@ class database_plugins_opinion
 
 	/**
 	 * Select all product in idclc or idcls
-	 * @access protected
-	 * @param int $idclc
-	 * @param int $idcls
-	 * @param int $limit
+	 * @param int $data
 	 * @return array
 	 */
-	protected static function product($idclc=null,$idcls=0,$limit=null,$sort='id')
+	public function product($data)
 	{
-		$sql = "SELECT opi.*,
+        if(is_array($data)) {
+            if (array_key_exists('fetch', $data)) {
+                $fetch = $data['fetch'];
+            } else {
+                $fetch = 'all';
+            }
+            if (array_key_exists('sort_order', $data)) {
+                $sort_order = $data['sort_order'];
+            } else {
+                $sort_order = 'DESC';
+            }
+            if (array_key_exists('limit', $data)) {
+                $limit_clause = null;
+                if (is_int($data['limit'])) {
+                    $limit_clause = ' LIMIT ' . $data['limit'];
+                }
+            }
+            if ($fetch == 'all_in') {
+                if(array_key_exists('sort_type',$data)) {
+                    switch ($data['sort_type']) {
+                        case 'id':
+                            $order_clause = " ORDER BY opi.idopinion {$sort_order}";
+                            break;
+                        case 'date':
+                            $order_clause = " ORDER BY opi.date_opinion {$sort_order}";
+                            break;
+                    }
+                }else{
+                    $order_clause = " ORDER BY opi.date_opinion {$sort_order}";
+                }
+                $sql = "SELECT opi.*,
 					p.idproduct,
 					p.idclc, 
 					p.idcls,
@@ -229,8 +256,11 @@ class database_plugins_opinion
 				JOIN mc_lang AS lang ON ( cat.idlang = lang.idlang )
 				WHERE opi.status_opinion = 1
 				GROUP BY opi.idopinion
-				ORDER BY opi.date_opinion DESC LIMIT 3";
-		return magixglobal_model_db::layerDB()->select($sql);
+				{$order_clause}
+                {$limit_clause}";
+                return magixglobal_model_db::layerDB()->select($sql);
+            }
+        }
 	}
 
 	/**

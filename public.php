@@ -133,14 +133,11 @@ class plugins_opinion_public extends database_plugins_opinion{
     }
 
     /**
-     * @param null $idclc
-     * @param int $idcls
-     * @param null $limit
-     * @param string $sort
+     * @param $data
      * @return array
      */
-	public function fetchProduct($idclc=null,$idcls=0,$limit=null,$sort='id'){
-        return parent::product($idclc,$idcls,$limit,$sort);
+	public function fetchProduct($data){
+        return parent::product($data);
     }
 
 	/**

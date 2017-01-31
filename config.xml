@@ -20,8 +20,8 @@
 					<number>2.1.0</number>
 					<phase>Stable</phase>
 					<support>
-                        <ticket href="https://github.com/magix-cms/magixcms/issues"></ticket>
-                        <git href="https://github.com/magix-cms/magixcms"></git>
+                        <ticket href="https://github.com/magix-cms/opinion/issues"></ticket>
+                        <git href="https://github.com/magix-cms/opinion"></git>
 					</support>
 				</version>
 			</infos>

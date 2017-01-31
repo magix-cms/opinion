@@ -1,5 +1,10 @@
 # Opinion
 Plugin Opinion for Magix CMS
+
+###version 
+
+[![release](https://img.shields.io/github/release/magix-cms/opinion.svg)](https://github.com/magix-cms/opinion/releases/latest)
+
 ## Description
 
 Mise en place d'un système de témoignages liés aux produit.

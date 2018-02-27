@@ -1,30 +1,35 @@
 <?xml version="1.0" encoding="UTF-8" ?>
+<!-- /*
+ * MAGIX CMS Copyright (c) 2008 - 2017 Gerits Aurelien,
+ * http://www.magix-cms.com
+ * Dual licensed under the MIT AND GPL Version 3 licenses.
+ *
+ * Date: september 06 13:07 2017
+ */-->
 <config>
-	<acl>
-		<admin>
-			<authorized>
-				<allow_access>1</allow_access>
-			</authorized>
-			<infos>
-				<authors>
-					<author>
-						<name>Salvatore Di Salvo</name>
-						<link>
-                            <website href="http://www.disalvo-infographiste.be" />
-						</link>
-					</author>
-				</authors>
-				<version>
-					<date_create>09/11/2016</date_create>
-					<date_update>09/11/2016</date_update>
-					<number>2.1.0</number>
-					<phase>Stable</phase>
-					<support>
-                        <ticket href="https://github.com/magix-cms/opinion/issues"></ticket>
-                        <git href="https://github.com/magix-cms/opinion"></git>
-					</support>
-				</version>
-			</infos>
-		</admin>
-	</acl>
+	<authorized>
+		<allow_access>1</allow_access>
+	</authorized>
+	<data>
+		<authors>
+			<author>
+				<name>Gerits Aurelien</name>
+				<website href="http://www.magix-cms.com" />
+			</author>
+			<author>
+				<name>Salvatore di Salvo</name>
+				<website href="http://www.disalvo-infographiste.be" />
+			</author>
+		</authors>
+		<release>
+			<date_create>26/08/2011</date_create>
+			<date_update>01/12/2017</date_update>
+			<version>3.0.0</version>
+			<phase>Stable</phase>
+		</release>
+		<support>
+			<ticket href="https://github.com/magix-cms/opinion/issues"></ticket>
+			<git href="https://github.com/magix-cms/opinion"></git>
+		</support>
+	</data>
 </config>

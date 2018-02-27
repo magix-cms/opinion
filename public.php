@@ -1,16 +1,16 @@
 <?php
-require_once('db/opinion.php');
+require_once('db.php');
 
-class plugins_opinion_public extends database_plugins_opinion{
+class plugins_opinion_public extends plugins_opinion_db {
 	/**
 	 * master classes
 	 */
-    protected $template, $header, $message, $setting, $mail;
+    protected $template, $header, $message, $settings, $data, $getlang, $origin, $modelDomain, $mail;
 
 	/**
 	 * get data
 	 */
-	public $lang, $page;
+	public $page;
 
 	/**
 	 * post data
@@ -21,40 +21,56 @@ class plugins_opinion_public extends database_plugins_opinion{
 	/**
 	 * plugins_opinion_public constructor.
 	 */
-    public function __construct(){
-		$this->template = new frontend_controller_plugins;
-		$this->header = new magixglobal_model_header;
-		$this->setting = frontend_model_setting::select_uniq_setting('css_inliner');
-		$this->mail = new magixglobal_model_mail('mail');
-		if(class_exists('frontend_model_message')){
-			$this->message = new frontend_model_message();
+    public function __construct() {
+		$this->template = new frontend_model_template();
+		$this->data = new frontend_model_data($this);
+		$this->getlang = $this->template->currentLanguage();
+		$this->mail = new mail_swift('mail');
+		$this->modelDomain = new frontend_model_domain($this->template);
+		$this->header = new http_header();
+		$this->message = new component_core_message($this->template);
+		$this->settings = new frontend_model_setting();
+
+		$formClean = new form_inputEscape();
+
+        if(http_request::isGet('page')){
+            $this->page = $formClean::numeric($_GET['page']);
+        }
+
+        if(http_request::isPost('opinion')){
+            $this->opinion = $formClean::arrayClean($_POST['opinion']);
+        }
+
+		if(http_request::isGet('__amp_source_origin')) {
+			$this->origin = $formClean->simpleClean($_GET['__amp_source_origin']);
 		}
-
-		$rFilter = new magixcjquery_filter_request();
-		$hforms = new magixcjquery_form_helpersforms();
-
-        if($rFilter::isGet('strLangue')){
-            $this->lang = $hforms::inputClean($_GET['strLangue']);
-        }
-        if($rFilter::isGet('page')){
-            $this->page = $hforms::inputNumeric($_GET['page']);
-        }
-
-        if($rFilter::isPost('opinion')){
-            $this->opinion = $hforms::arrayClean($_POST['opinion']);
-        }
     }
 
 	/**
 	 * @return bool
 	 */
     private function getValidateData(){
-        $required = array('rating','msg','pseudo','email','idcatalog');
+        $required = array('rating','msg','pseudo','email','id_product');
 
         foreach($required as $k => $v){
             if(!isset($this->opinion[$v])){
-				$this->header->set_json_headers();
-				$this->message->json_post_response(false,'empty');
+				if(isset($this->origin)) {
+					$domains = $this->modelDomain->getValidDomains();
+					$validOrigins = array("https://cdn.ampproject.org");
+					foreach ($domains as $domain) {
+						$domain['url_subdomain'] = str_replace('www.','',$domain['url_domain']);
+						$validOrigins[] = 'https://'.$domain['url_subdomain'].'.cdn.ampproject.org';
+						$validOrigins[] = 'https://'.$domain['url_domain'].'.amp.cloudflare.com';
+						$validOrigins[] = 'https://'.$domain['url_domain'];
+					}
+					$this->header->amp_headers($this->origin,$validOrigins,false);
+					$this->header->set_json_headers();
+					http_response_code(400);
+					print json_encode(array('error'=>'empty'), JSON_FORCE_OBJECT);
+				}
+				else {
+					$this->message->json_post_response(false,'empty');
+				}
 				return false;
             }
         }
@@ -66,27 +82,21 @@ class plugins_opinion_public extends database_plugins_opinion{
 	 * @param bool $debug
 	 * @return string
 	 */
-    private function getBodyMail($sendTo,$debug = false){
-		$fetchColor = new frontend_db_setting();
-		$this->template->assign('getDataCSSIColor',$fetchColor->fetchCSSIColor());
+    private function getBodyMail($sendTo = 'admin',$debug = false){
+		$cssInliner = $this->settings->getSetting('css_inliner');
+		$this->template->assign('getDataCSSIColor',$this->settings->fetchCSSIColor());
+		$this->template->assign('opinion',$this->opinion);
+
+		$bodyMail = $this->template->fetch('opinion/mail/'.$sendTo.'.tpl');
+		if ($cssInliner['value']) {
+			$bodyMail = $this->mail->plugin_css_inliner($bodyMail,array(component_core_system::basePath().'skin/'.$this->template->themeSelected().'/opinion/css' => 'foundation-emails.css'));
+		}
 
 		if($debug) {
-			$bodyMail = $this->template->fetch('mail/admin.tpl');
-
-			if ($this->setting['setting_value']) {
-				print $this->mail->plugin_css_inliner($bodyMail,array('/opinion/css' => 'foundation-emails.css'));
-			} else {
-				print $bodyMail;
-			}
-		} else {
-			$this->template->assign('opinion',$this->opinion);
-			$bodyMail = $this->template->fetch('mail/'.$sendTo.'.tpl');
-
-			if ($this->setting['setting_value']) {
-				return $this->mail->plugin_css_inliner($bodyMail,array('/opinion/css' => 'foundation-emails.css'));
-			} else {
-				return $bodyMail;
-			}
+			print $bodyMail;
+		}
+		else {
+			return $bodyMail;
 		}
     }
 
@@ -99,35 +109,42 @@ class plugins_opinion_public extends database_plugins_opinion{
 			$this->getBodyMail('admin',true);
 		}
 		else {
-			if ($admin) {
-				$this->template->configLoad();
-				$core_mail = new magixglobal_model_mail('mail');
-				$contact = new plugins_contact_public();
-				$lotsOfRecipients = $contact->getContact();
-
-				foreach ($lotsOfRecipients as $recipient){
-					$message = $core_mail->body_mail(
-						$this->template->getConfigVars('title_mail_admin'),
-						array($this->template->getConfigVars('noreply_mail')),
-						array($recipient['mail_contact']),
-						$this->getBodyMail('admin'),
-						false
-					);
-					$core_mail->batch_send_mail($message);
-				}
+			$allowed_hosts = array_map(function($dom) { return $dom['url_domain']; },$this->modelDomain->getValidDomains());
+			if (!isset($_SERVER['HTTP_HOST']) || !in_array($_SERVER['HTTP_HOST'], $allowed_hosts)) {
+				header($_SERVER['SERVER_PROTOCOL'].' 400 Bad Request');
+				exit;
 			}
 			else {
-				$this->template->configLoad();
-				$core_mail = new magixglobal_model_mail('mail');
+				$noreply = 'noreply@'.str_replace('www.','',$_SERVER['HTTP_HOST']);
 
-				$message = $core_mail->body_mail(
-					$this->template->getConfigVars('title_mail_user'),
-					array($this->template->getConfigVars('noreply_mail')),
-					array($this->opinion['email']),
-					$this->getBodyMail('user'),
-					false
-				);
-				$core_mail->batch_send_mail($message);
+				if ($admin) {
+					$this->template->configLoad();
+					$contact = new plugins_contact_public();
+					$lotsOfRecipients = $contact->getContact();
+
+					foreach ($lotsOfRecipients as $recipient){
+						$message = $this->mail->body_mail(
+							$this->template->getConfigVars('title_mail_admin'),
+							array($noreply),
+							array($recipient['mail_contact']),
+							$this->getBodyMail('admin'),
+							false
+						);
+						$this->mail->batch_send_mail($message);
+					}
+				}
+				else {
+					$this->template->configLoad();
+
+					$message = $this->mail->body_mail(
+						$this->template->getConfigVars('title_mail_user'),
+						array($noreply),
+						array($this->opinion['email']),
+						$this->getBodyMail('user'),
+						false
+					);
+					$this->mail->batch_send_mail($message);
+				}
 			}
 		}
     }
@@ -213,6 +230,9 @@ class plugins_opinion_public extends database_plugins_opinion{
 	private function add($data){
 		switch($data['type']){
 			case 'opinion':
+				$lang = parent::fetchData(array('context' => 'one','type' => 'lang'),array('iso' => $this->getlang));
+				$this->opinion['id_lang'] = $lang['id_lang'];
+
 				parent::insert(
 					array(
 						'type' => $data['type']
@@ -220,8 +240,23 @@ class plugins_opinion_public extends database_plugins_opinion{
 					$this->opinion
 				);
 
-				$this->header->set_json_headers();
-				$this->message->json_post_response(true,'add',null,array('template'=>'notify/message.tpl'));
+				if(isset($this->origin)) {
+					$domains = $this->modelDomain->getValidDomains();
+					$validOrigins = array("https://cdn.ampproject.org");
+					foreach ($domains as $domain) {
+						$domain['url_subdomain'] = str_replace('www.','',$domain['url_domain']);
+						$validOrigins[] = 'https://'.$domain['url_subdomain'].'.cdn.ampproject.org';
+						$validOrigins[] = 'https://'.$domain['url_domain'].'.amp.cloudflare.com';
+						$validOrigins[] = 'https://'.$domain['url_domain'];
+					}
+					$this->header->amp_headers($this->origin,$validOrigins,false);
+					$this->header->set_json_headers();
+					print json_encode(array('status'=>'Success'));
+				}
+				else {
+					//$this->message->json_post_response(true,'add',null,array('method'=>'fetch','template'=>'contact/notify/message.tpl'));
+					$this->message->json_post_response(true,'add');
+				}
 				break;
 		}
 	}

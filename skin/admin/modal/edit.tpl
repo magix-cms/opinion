@@ -21,7 +21,24 @@
                                 </tr>
                                 <tr>
                                     <th>{#opinion_note#|ucfirst}&nbsp;:</th>
-                                    <td id="opinion-rating"></td>
+                                    <td id="opinion-rating">
+                                        <div class="rating">
+                                            <div class="empty-star">
+                                                <i class="material-icons">star_border</i>
+                                                <i class="material-icons">star_border</i>
+                                                <i class="material-icons">star_border</i>
+                                                <i class="material-icons">star_border</i>
+                                                <i class="material-icons">star_border</i>
+                                            </div>
+                                            <div id="filled-star" data-rate="">
+                                                <i class="material-icons">star</i>
+                                                <i class="material-icons">star</i>
+                                                <i class="material-icons">star</i>
+                                                <i class="material-icons">star</i>
+                                                <i class="material-icons">star</i>
+                                            </div>
+                                        </div>
+                                    </td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -29,14 +46,14 @@
                         <div class="col-xs-12 col-sm-6 col-md-7">
                             <div class="form-group">
                                 <label for="msg_opinion">{#opinion_content#|ucfirst}*&nbsp;:</label>
-                                <textarea id="msg_opinion" name="msg_opinion" class="form-control"></textarea>
+                                <textarea id="msg_opinion" name="opinion[msg]" class="form-control"></textarea>
                                 <p class="help-block">{#fields_requested#|ucfirst}</p>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <input type="hidden" id="idopinion" name="id" value="" />
+                    <input type="hidden" id="id_opinion" name="id" value="" />
                     <button type="button" class="btn btn-default" data-dismiss="modal">{#cancel#|ucfirst}</button>
                     <input type="submit" class="btn btn-primary" value="{#save#|ucfirst}" />
                 </div>

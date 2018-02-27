@@ -1,7 +1,46 @@
 #pending_list .td-lg {
     padding: 12px 10px;
 }
-.text-yellow {
-    color: #ffd700;
-    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.3);
+
+.rating {
+    position: relative;
+    display: inline-block;
 }
+
+.rating .empty-star,
+.rating .filled-star {
+    display: flex;
+}
+
+.rating .empty-star {
+    color: #959595;
+}
+
+#filled-star {
+    color: #ffd700;
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    box-sizing: content-box;
+    display: flex;
+}
+
+#filled-star[data-rate^="0"] { width: 0; }
+#filled-star[data-rate^="1"] { width: 20%; }
+#filled-star[data-rate^="2"] { width: 40%; }
+#filled-star[data-rate^="3"] { width: 60%; }
+#filled-star[data-rate^="4"] { width: 80%; }
+#filled-star[data-rate^="5"] { width: 100%; }
+
+#filled-star[data-rate$="1"] { padding-right: 2%; }
+#filled-star[data-rate$="2"] { padding-right: 4%; }
+#filled-star[data-rate$="3"] { padding-right: 6%; }
+#filled-star[data-rate$="4"] { padding-right: 8%; }
+#filled-star[data-rate$="5"] { padding-right: 10%; }
+#filled-star[data-rate$="6"] { padding-right: 12%; }
+#filled-star[data-rate$="7"] { padding-right: 14%; }
+#filled-star[data-rate$="8"] { padding-right: 16%; }
+#filled-star[data-rate$="9"] { padding-right: 18%; }

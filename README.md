@@ -1,9 +1,5 @@
 # Opinion
-Plugin Opinion for Magix CMS
-
-###version 
-
-[![release](https://img.shields.io/github/release/magix-cms/opinion.svg)](https://github.com/magix-cms/opinion/releases/latest)
+Plugin Opinion for Magix CMS 3
 
 ## Description
 

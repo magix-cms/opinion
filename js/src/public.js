@@ -19,14 +19,14 @@
  # but WITHOUT ANY WARRANTY; without even the implied warranty of
  # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  # GNU General Public License for more details.
-
+ #
  # You should have received a copy of the GNU General Public License
  # along with this program.  If not, see <http://www.gnu.org/licenses/>.
  #
  # -- END LICENSE BLOCK -----------------------------------
-
+ #
  # DISCLAIMER
-
+ #
  # Do not edit or add to this file if you wish to upgrade MAGIX CMS to newer
  # versions in the future. If you wish to customize MAGIX CMS for your
  # needs please refer to http://www.magix-cms.com for more information.
@@ -38,47 +38,39 @@
  * License: Dual licensed under the MIT or GPL Version
  */
 var Mc_plugins_opinion = (function ($, undefined) {
-    //Fonction Private
-    function add(iso,currentUrl){
-        $.nicenotify.notifier = {
-            box:"",
-            elemclass : '.mc-message-opinion'
-        };
-        $("#add-opinion").validate({
-            onsubmit: true,
-            event: 'submit',
-            submitHandler: function(form) {
-                $.nicenotify({
-                    ntype: "submit",
-                    uri: '/'+iso+'/opinion/',
-                    typesend: 'post',
-                    idforms: $(form),
-                    noticedata: {product_link:currentUrl},
-                    resetform:true,
-                    successParams:function(d){
-                        $('#modal-opinion').modal('hide');
-                        $.nicenotify.initbox(d.notify,{display:true});
-                        window.setTimeout(function () { $('.mc-message .alert').alert('close'); }, 4000);
-                    }
-                });
-                return false;
-            }
-        });
-    }
     return {
         //Fonction Public
-        run:function (iso,currentUrl) {
-            add(iso,currentUrl);
+        run:function () {
+            if($.fn.rating !== undefined) {
+                // --- Initiate the star-rating plugin
+                $("#rating-star").rating({
+                    theme: 'material-icons',
+                    emptyStar: '<i class="material-icons">star_border</i>',
+                    filledStar: '<i class="material-icons">star</i>',
+                    showClear: false,
+                    showCaption: false,
+                    defaultCaption: ''
+                });
 
-            /** Modal **/
-            $("#rating-star").rating({
-                glyphicon: false
-            });
-            $('#rating-star').on('rating.change', function(event, value, caption) {
-                $('#rating').prop('selectedIndex',value);
-            });
-            $('#rating').change(function(){
-                $('#rating-star').rating('update', this.value);
+                // --- When seletcing a rate with the stars, update the select input
+                $('#rating-star').on('rating.change', function(event, value, caption) {
+                    $('#rating option').each(function(){
+                        if($(this).val() === value) {
+                            $(this).prop('selected',true);
+                        }
+                    });
+                });
+
+                // --- When selecting a rate in the select, update the rating stars
+                $('#rating').change(function(){
+                    $('#rating-star').rating('update', this.value);
+                });
+            }
+
+            // --- When opening the list of reviews, scroll to the list
+            $("#opinions").on("show.bs.collapse", function () {
+                var prev = $('#opinions').prev(), tar = prev.position().top + prev.height();
+                $('html, body').animate({ scrollTop: (tar - $('#header').height()) }, 500);
             });
         }
     };

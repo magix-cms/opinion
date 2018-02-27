@@ -1,154 +1,101 @@
 <?php
-require_once('db/opinion.php');
+require_once('db.php');
 
-class plugins_opinion_admin extends database_plugins_opinion {
+class plugins_opinion_admin extends plugins_opinion_db {
 	/**
 	 * master classes
 	 */
-    protected $header, $template, $message;
+    protected $header, $template, $message, $data;
 
 	/**
 	 * get data
 	 */
-	public $plugin, $lang, $action, $tab, $edit;
+	public $plugin, $lang, $action, $tabs, $edit;
 
 	/**
 	 * post data
 	 */
-    public $id, $msg_opinion;
+    public $id, $opinion;
 
 	/**
 	 * plugins_opinion_admin constructor.
 	 */
     public function __construct(){
-		$this->header= new magixglobal_model_header();
-		$this->template = new backend_controller_plugins();
-		if(class_exists('backend_model_message')){
-			$this->message = new backend_model_message();
+		$this->template = new backend_model_template();
+		$this->header= new http_header();
+		$this->message = new component_core_message($this->template);
+		$this->data = new backend_model_data($this);
+		$formClean = new form_inputEscape();
+
+        // --- Global
+        if(http_request::isGet('getlang')) {
+            $this->lang = $formClean->numeric($_GET['getlang']);
+        }
+        if(http_request::isGet('edit')) {
+            $this->edit = $formClean->numeric($_GET['edit']);
+        }
+		if(http_request::isGet('tabs')) {
+			$this->tabs = $formClean->simpleClean($_GET['tabs']);
+		}
+        if(http_request::isGet('action')) {
+            $this->action = $formClean->simpleClean($_GET['action']);
+        }
+
+        // --- Post
+		if(http_request::isGet('id')) {
+			$this->id = (integer) $formClean->numeric($_GET['id']);
+		}
+		elseif(http_request::isPost('id')) {
+			$this->id = (integer)$formClean->numeric($_POST['id']);
 		}
 
-		$rFilter = new magixcjquery_filter_request();
-		$vFilter = new magixcjquery_filter_isVar();
-		$hForms = new magixcjquery_form_helpersforms();
-
-        // Global
-        if($rFilter->isGet('getlang')){
-            $this->lang = $vFilter->isPostNumeric($_GET['getlang']);
-        }
-        if($rFilter->isGet('edit')){
-            $this->edit = $vFilter->isPostNumeric($_GET['edit']);
-        }
-		if($rFilter->isGet('tab')){
-			$this->tab = $hForms->inputClean($_GET['tab']);
+		if(http_request::isPost('opinion')) {
+			$this->opinion = $formClean->arrayClean($_POST['opinion']);
 		}
-        if($rFilter->isGet('action')){
-            $this->action = $hForms->inputClean($_GET['action']);
-        }
-		if($rFilter->isGet('id')){
-			$this->id = (integer) $vFilter->isPostNumeric($_GET['id']);
-		}
-		elseif($rFilter->isPost('id')){
-			$this->id = (integer)$vFilter->isPostNumeric($_POST['id']);
-		}
-		if($rFilter->isPost('msg_opinion')){
-			$this->msg_opinion = $hForms->inputClean($_POST['msg_opinion']);
-		}
-
-        // Dedicated
-        if($rFilter->isGet('plugin')){
-            $this->plugin = $hForms->inputClean($_GET['plugin']);
-        }
     }
 
 	/**
-	 * Configuration du plugin
-	 * @return array
+	 * Method to override the name of the plugin in the admin menu
+	 * @return string
 	 */
-	public function setConfig(){
-		return array(
-			'url'=> array(
-				'lang'=>'list',
-				'name'=>'Témoignages'
-			)
-		);
-	}
-
-	/**
-	 * @access private
-	 * Installing mysql database plugin
-	 */
-	private function install_table()
+	public function getExtensionName()
 	{
-		if (parent::c_show_tables() == 0) {
-			$this->template->db_install_table('db.sql', 'request/install.tpl');
-		} else {
-			return true;
-		}
+		return $this->template->getConfigVars('opinion_plugin');
 	}
 
 	/**
 	 * Retrieve product url
 	 * @param $data
 	 */
-	private function getProductUrl(&$data)
+	private function getProductUrl($data)
 	{
-		$ModelRewrite = new magixglobal_model_rewrite();
+		$ModelRewrite = new component_routing_url();
 		foreach ($data as $i => $row) {
-			$subcat['id']   = (isset($row['idcls'])) ? $row['idcls'] : null;
-			$subcat['name'] = (isset($row['pathslibelle'])) ? $row['pathslibelle'] : null;
-
-			$data[$i]['url'] =
-				$ModelRewrite->filter_catalog_product_url(
-					$row['iso'],
-					$row['pathclibelle'],
-					$row['idclc'],
-					$subcat['name'],
-					$subcat['id'],
-					$row['urlcatalog'],
-					$row['idproduct'],
-					true
-				);
+			$data[$i]['url'] = $ModelRewrite->getBuildUrl(
+				array(
+					'type' => 'product',
+					'iso' => $row['iso_lang'],
+					'id_parent' => $row['id_parent'],
+					'url_parent' => $row['url_parent'],
+					'id' => $row['id_product'],
+					'url' => $row['url_p']
+				)
+			);
 		}
+		return $data;
     }
 
 	/**
-	 * Retrieve data
-	 * @param string $context
-	 * @param string $type
-	 * @param string|int|null $id
-	 * @return mixed
-	 */
-	private function setItems(&$context, $type, $id = null) {
-		$params = array(':lang' => $this->lang);
-		if($id) {
-			$params[':id'] = $id;
-			$context = $context ? $context : 'unique';
-		} else {
-			$context = $context ? $context : 'all';
-		}
-		return parent::fetchData(array('context'=>$context,'type'=>$type),$params);
-	}
-
-	/**
 	 * Assign data to the defined variable or return the data
-	 * @param string $context
 	 * @param string $type
 	 * @param string|int|null $id
+	 * @param string $context
+	 * @param boolean $assign
 	 * @return mixed
+	 * @throws Exception
 	 */
-	public function getItems($type, $id = null, $context = null) {
-		$data = $this->setItems($context, $type, $id);
-		switch ($context) {
-			case 'last':
-				return $data;
-				break;
-			default:
-				if ($type == 'pending') {
-					$this->getProductUrl($data);
-				}
-				$varName = $type;
-				$this->template->assign($varName,$data);
-		}
+	private function getItems($type, $id = null, $context = null, $assign = true) {
+		return $this->data->getItems($type, $id, $context, $assign);
 	}
 
 	/**
@@ -163,12 +110,11 @@ class plugins_opinion_admin extends database_plugins_opinion {
 						'type' => $data['type']
 					),
 					array(
-						':id' => $this->id,
-						':msg' => $this->msg_opinion
+						'id' => $this->id,
+						'msg' => $this->opinion['msg']
 					)
 				);
-				$this->header->set_json_headers();
-				$this->message->json_post_response(true,'update',array(':id' => $this->id));
+				$this->message->json_post_response(true,'update',array('id' => $this->id));
 				break;
 			case 'validate':
 				parent::update(
@@ -176,11 +122,10 @@ class plugins_opinion_admin extends database_plugins_opinion {
 						'type' => $data['type']
 					),
 					array(
-						':id' => $this->id
+						'id' => $this->id
 					)
 				);
-				$this->header->set_json_headers();
-				$this->message->json_post_response(true,'update',array(':id' => $this->id));
+				$this->message->json_post_response(true,'update',array('id' => $this->id));
 				break;
 		}
 	}
@@ -198,9 +143,59 @@ class plugins_opinion_admin extends database_plugins_opinion {
 					),
 					$data['data']
 				);
-				$this->header->set_json_headers();
 				$this->message->json_post_response(true,'delete',$data['data']);
 				break;
+		}
+	}
+
+	/**
+	 * Dispatcher
+	 */
+	public function run() {
+		if (isset($this->action)) {
+			switch ($this->action) {
+				case 'edit':
+					if($this->id) {
+						if(!empty($this->msg_opinion)){
+							$this->upd(
+								array(
+									'type' => 'opinion'
+								)
+							);
+						}
+					}
+					else {
+						$this->header->set_json_headers();
+						print json_encode($this->getItems('opinion',$this->edit,'one'));
+					}
+					break;
+				case 'validate':
+					if($this->id) {
+						$this->upd(
+							array(
+								'type' => 'validate'
+							)
+						);
+					}
+					break;
+				case 'delete':
+					if($this->id) {
+						$this->del(
+							array(
+								'type'=>'opinion',
+								'data'=>array(
+									'id' => $this->id
+								)
+							)
+						);
+					}
+					break;
+			}
+		}
+		else {
+			$pending = $this->getItems('pending',null,'all',false);
+			$this->template->assign('pending',$this->getProductUrl($pending));
+			$this->template->display('index.tpl');
 		}
 	}
 
@@ -223,59 +218,4 @@ class plugins_opinion_admin extends database_plugins_opinion {
 			}
 		}
 	}
-
-	/**
-	 * Dispatcher
-	 */
-    public function run() {
-        if (self::install_table()) {
-            if (isset($this->action)) {
-            	switch ($this->action) {
-					case 'edit':
-						if($this->id) {
-							if(!empty($this->msg_opinion)){
-								$this->upd(
-									array(
-										'type' => 'opinion'
-									)
-								);
-							}
-						} else {
-							$this->header->set_json_headers();
-							print json_encode($this->getItems('opinion',$this->edit,'last'));
-						}
-						break;
-					case 'validate':
-						if($this->id) {
-							$this->upd(
-								array(
-									'type' => 'validate'
-								)
-							);
-						}
-						break;
-					case 'delete':
-						if ($this->id) {
-							$this->del(
-								array(
-									'type'=>'opinion',
-									'data'=>array(
-										':id' => $this->id
-									)
-								)
-							);
-						}
-						break;
-				}
-            }
-            else {
-            	if($this->tab) {
-					$this->template->display('about.tpl');
-				} else {
-					$this->getItems('pending');
-					$this->template->display('index.tpl');
-				}
-			}
-        }
-    }
 }

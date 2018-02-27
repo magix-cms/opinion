@@ -1,8 +1,8 @@
-<tr id="op_{$op.idopinion}">
+<tr id="op_{$op.id_opinion}">
     {if !$smarty.get.plugin}
         <td>
             <a href="{$op.url}" class="btn btn-link targetblank">
-                {$op.titlecatalog}
+                {$op.name_p}
             </a>
         </td>
     {/if}
@@ -24,19 +24,19 @@
         </td>
     {else}
         <td>
-            <a href="#" class="btn text-warning toggleModal" data-id="{$op.idopinion}" data-toggle="modal" data-target="#modal-validate">
+            <a href="#" class="btn text-warning toggleModal" data-id="{$op.id_opinion}" data-toggle="modal" data-target="#modal-validate">
                 <span class="fa fa-clock-o"></span> En attente
             </a>
         </td>
     {/if}
     {if !$smarty.get.plugin}
         <td class="text-center">
-            <a href="#" class="btn btn-link toggleModal" data-id="{$op.idopinion}" data-toggle="modal" data-target="#modal-edit">
+            <a href="#" class="btn btn-link toggleModal" data-id="{$op.id_opinion}" data-toggle="modal" data-target="#modal-edit">
                 <span class="fa fa-edit"></span>
             </a>
         </td>
         <td class="text-center">
-            <a href="#" class="btn btn-link toggleModal" data-id="{$op.idopinion}" data-toggle="modal" data-target="#modal-delete">
+            <a href="#" class="btn btn-link toggleModal" data-id="{$op.id_opinion}" data-toggle="modal" data-target="#modal-delete">
                 <span class="fa fa-trash-o"></span>
             </a>
         </td>
